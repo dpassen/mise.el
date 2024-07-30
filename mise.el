@@ -78,7 +78,7 @@ if the current buffer should not obey `global-mise-mode.'"
   :type '(repeat function)
   :group 'mise)
 
-(defcustom mise-lighter '(:eval (mise--lighter))
+(defcustom mise-lighter '(:eval (format " mise[%s]" (mise--modeline-info)))
   "The mode line lighter for `mise-mode'.
 You can set this to nil to disable the lighter."
   :type 'sexp)
@@ -137,14 +137,14 @@ MSG and ARGS are as for that function."
 ARGS is as same as `message'."
   (message (concat "mise: " (apply #'format args))))
 
-(defun mise--lighter ()
+(defun mise--modeline-info ()
   "Return a colorized version of `mise--status' for use in the mode line."
   (let ((face (pcase mise--status
                 ('none 'default)
                 ((or 'error 'untrust) 'error)
                 ('global 'success)
                 ('local 'warning))))
-    `(" mise[" (:propertize ,(symbol-name mise--status) face ,face) "]")))
+    `(:propertize ,(symbol-name mise--status) face ,face)))
 
 (defun mise--call (destination &rest args)
   "Call mise executable in global process environment.
@@ -236,7 +236,7 @@ environments updated."
            cache-key cache-value)
       (unless mise--init-env
         (setq-local mise--init-env `(:env ,process-environment
-                                     :path ,exec-path)))
+                                          :path ,exec-path)))
       (if (null env-dir)
           (progn
             (setq-local mise--status 'none)
